@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+# downloaded/trained checkpoints -- large binaries, not source
+*.pth
+r50_deformable_detr_caldetr_coco
+
+# eval script outputs
+*.pt
+dets*.pt
