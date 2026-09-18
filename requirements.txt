@@ -2,3 +2,4 @@ pycocotools
 tqdm
 cython
 scipy
+imagecorruptions  # only needed for tools/make_corcoco.py (CorCOCO out-domain eval set)
