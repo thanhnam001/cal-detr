@@ -489,6 +489,15 @@ def build(args):
     num_classes = 20 if args.dataset_file != 'coco' else 91
     if args.dataset_file == "coco_panoptic":
         num_classes = 250
+    if args.dataset_file == "cityscapes":
+        # 8 classes (person, rider, car, truck, bus, train, motorcycle, bicycle) + 1,
+        # matching this repo's own "+1" convention (num_classes=91=90coco+1). See
+        # tools/cityscapes2coco.py, which emits contiguous category_id 1..8.
+        num_classes = 9
+    # Explicit override, e.g. if the converted json ends up with a different category
+    # count than assumed above.
+    if getattr(args, 'num_classes', None):
+        num_classes = args.num_classes
     device = torch.device(args.device)
 
     backbone = build_backbone(args)

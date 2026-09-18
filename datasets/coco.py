@@ -167,3 +167,32 @@ def build(image_set, args):
     dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(image_set), return_masks=args.masks,
                             cache_mode=args.cache_mode, local_rank=get_local_rank(), local_size=get_local_size())
     return dataset
+
+
+def build_cityscapes(image_set, args):
+    """Cityscapes (or Foggy Cityscapes for out-domain eval), converted to COCO-format
+    json by tools/cityscapes2coco.py. --coco_path is the Cityscapes root passed as
+    --root to that converter; file_name entries in the json are already relative to
+    that root, so (unlike build() above) img_folder is the root itself, not a
+    train2017/val2017 subfolder -- Cityscapes' own leftImg8bit/<split>/<city>/ layout
+    is kept as-is rather than reshuffled to match COCO's folder convention.
+
+    --coco_path may also point at a Foggy Cityscapes conversion for image_set=='val'
+    (the paper's out-domain scenario reuses Cityscapes' own train/val split; there is
+    no separate Foggy training set). Use --num_classes / a separate --coco_path run to
+    keep that eval distinct from the in-domain val pass.
+    """
+    root = Path(args.coco_path)
+    assert root.exists(), f'provided Cityscapes path {root} does not exist'
+    PATHS = {
+        "train": (root, root / "train.json"),
+        "val": (root, root / "val.json"),
+    }
+    img_folder, ann_file = PATHS[image_set]
+    assert ann_file.exists(), (
+        f'{ann_file} not found -- run tools/cityscapes2coco.py --root {root} '
+        f'--split {image_set} first')
+    dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(image_set),
+                            return_masks=args.masks, cache_mode=args.cache_mode,
+                            local_rank=get_local_rank(), local_size=get_local_size())
+    return dataset
