@@ -107,6 +107,11 @@ def get_args_parser():
 
     # dataset parameters
     parser.add_argument('--dataset_file', default='coco')
+    parser.add_argument('--num_classes', default=None, type=int,
+                        help='override the num_classes inferred from --dataset_file '
+                             '(needed for a non-COCO dataset loaded via the COCO-format '
+                             'loader, e.g. Cityscapes converted with tools/cityscapes2coco.py '
+                             '-> 9 == 8 classes + 1, matching this repo\'s own "+1" convention)')
     parser.add_argument('--coco_path', default='./data/coco', type=str)
     parser.add_argument('--coco_panoptic_path', type=str)
     parser.add_argument('--remove_difficult', action='store_true')
@@ -221,7 +226,7 @@ def main(args):
         base_ds = get_coco_api_from_dataset(dataset_val)
 
     if args.frozen_weights is not None:
-        checkpoint = torch.load(args.frozen_weights, map_location='cpu')
+        checkpoint = torch.load(args.frozen_weights, map_location='cpu', weights_only=False)
         model_without_ddp.detr.load_state_dict(checkpoint['model'])
 
     output_dir = Path(args.output_dir)
@@ -230,7 +235,7 @@ def main(args):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
         else:
-            checkpoint = torch.load(args.resume, map_location='cpu')
+            checkpoint = torch.load(args.resume, map_location='cpu', weights_only=False)
         missing_keys, unexpected_keys = model_without_ddp.load_state_dict(checkpoint['model'], strict=False)
         unexpected_keys = [k for k in unexpected_keys if not (k.endswith('total_params') or k.endswith('total_ops'))]
         if len(missing_keys) > 0:

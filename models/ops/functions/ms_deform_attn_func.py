@@ -15,7 +15,13 @@ import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-import MultiScaleDeformableAttention as MSDA
+try:
+    import MultiScaleDeformableAttention as MSDA
+    MSDA_AVAILABLE = True
+except ImportError:
+    # Compiled CUDA op not built: fall back to ms_deform_attn_core_pytorch below.
+    MSDA = None
+    MSDA_AVAILABLE = False
 
 
 class MSDeformAttnFunction(Function):
