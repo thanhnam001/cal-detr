@@ -2,4 +2,14 @@ pycocotools
 tqdm
 cython
 scipy
-imagecorruptions  # only needed for tools/make_corcoco.py (CorCOCO out-domain eval set)
+# only needed for tools/make_corcoco.py (CorCOCO out-domain eval set). opencv-python-headless
+# is pinned explicitly (and listed BEFORE imagecorruptions) because imagecorruptions declares
+# a plain "opencv-python" dependency, which pulls in Qt/X11 bindings (libxcb, libGL, ...) that
+# a headless server typically doesn't have installed, failing with e.g. "ImportError:
+# libxcb.so.1: cannot open shared object file". Both packages provide the same `cv2` module;
+# headless just omits the GUI bindings this script (or any batch/offline script) never uses.
+# If opencv-python is already installed from something else in your env, remove it first
+# (`pip uninstall -y opencv-python`) -- pip won't do that substitution automatically since
+# they're different distribution names.
+opencv-python-headless
+imagecorruptions
